@@ -1,0 +1,112 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\dev\\burner\\contracts\\contracts\\ElasticToken.sol": {
+      "lastModificationDate": 1738322195300,
+      "contentHash": "9c401c04625b819ff1c374a01920fb88",
+      "sourceName": "contracts/ElasticToken.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "ElasticToken",
+        "IPriceFeed"
+      ]
+    },
+    "C:\\dev\\burner\\contracts\\contracts\\mocks\\MockPriceFeed.sol": {
+      "lastModificationDate": 1738317580760,
+      "contentHash": "989d17faf4a366b450de834234b37945",
+      "sourceName": "contracts/mocks/MockPriceFeed.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "MockPriceFeed"
+      ]
+    },
+    "C:\\dev\\burner\\contracts\\contracts\\mocks\\ReentrancyAttacker.sol": {
+      "lastModificationDate": 1738308036725,
+      "contentHash": "93922e4eee47b3404717eedd8fb42fb9",
+      "sourceName": "contracts/mocks/ReentrancyAttacker.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "IElasticToken",
+        "ReentrancyAttacker"
+      ]
+    }
+  }
+}

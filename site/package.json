@@ -1,0 +1,57 @@
+{
+  "name": "elastic-token-interface",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@chakra-ui/react": "^2.8.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@visx/visx": "^3.12.0",
+    "@web3-react/core": "^8.2.0",
+    "@web3-react/injected-connector": "^6.0.7",
+    "ajv": "^8.17.1",
+    "ethers": "^6.7.0",
+    "framer-motion": "^10.15.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.10.1",
+    "react-router-dom": "^6.14.2",
+    "react-scripts": "5.0.1",
+    "recharts": "^2.15.1",
+    "web3": "^4.0.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.3",
+    "@types/node": "^20.4.5",
+    "@types/react": "^18.2.18",
+    "@types/react-dom": "^18.2.7",
+    "png-to-ico": "^2.1.8",
+    "sharp": "^0.33.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}
