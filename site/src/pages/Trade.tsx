@@ -41,7 +41,7 @@ const Trade = () => {
   const { contract, account, tokenFunctions } = useWeb3Context();
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [symbol, setSymbol] = useState('ETH');
+  const [symbol, setSymbol] = useState('BTC');
   const [needsApproval, setNeedsApproval] = useState(false);
   const [supportedTokens, setSupportedTokens] = useState<string[]>([]);
   const [slippage, setSlippage] = useState(0.5); // 0.5% default slippage
