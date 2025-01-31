@@ -1,6 +1,7 @@
 import { Box, Flex, Button, Text, useColorModeValue } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import { useWeb3Context } from '../context/Web3Context';
+import NetworkSelector from './NetworkSelector';
 
 const Navbar = () => {
   const { account, connect, disconnect } = useWeb3Context();
@@ -27,12 +28,15 @@ const Navbar = () => {
             <Text color="white" as={Link} to="/audit">Audit</Text>
           </Flex>
         </Flex>
-        <Button
-          onClick={account ? disconnect : connect}
-          colorScheme={account ? 'red' : 'blue'}
-        >
-          {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Connect Wallet'}
-        </Button>
+        <Flex gap={4} alignItems="center">
+          <NetworkSelector />
+          <Button
+            onClick={account ? disconnect : connect}
+            colorScheme={account ? 'red' : 'blue'}
+          >
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Connect Wallet'}
+          </Button>
+        </Flex>
       </Flex>
     </Box>
   );

@@ -1,31 +1,29 @@
-export const SUPPORTED_NETWORKS = {
-	ARBITRUM_ONE: 42161,
-	ARBITRUM_GOERLI: 421613,
-	  LOCAL: 31337
+export interface NetworkInfo {
+  id: number;
+  name: string;
+  rpcUrl: string;
+  currency: string;
+  explorerUrl: string;
+  logo: string;
+}
 
+export const SUPPORTED_NETWORKS: { [key: string]: NetworkInfo } = {
+  arbitrum: {
+    id: 42161,
+    name: 'Arbitrum One',
+    rpcUrl: 'https://arb1.arbitrum.io/rpc',
+    currency: 'ETH',
+    explorerUrl: 'https://arbiscan.io',
+    logo: '/arbitrum.svg'
+  },
+  arbitrumSepolia: {
+    id: 421614,
+    name: 'Arbitrum Sepolia',
+    rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc',
+    currency: 'ETH',
+    explorerUrl: 'https://sepolia.arbiscan.io',
+    logo: '/arbitrum.svg'
+  }
 };
 
-export const NETWORK_DETAILS = {
-	[SUPPORTED_NETWORKS.ARBITRUM_ONE]: {
-		chainId: `0x${SUPPORTED_NETWORKS.ARBITRUM_ONE.toString(16)}`,
-		chainName: 'Arbitrum One',
-		nativeCurrency: {
-			name: 'ETH',
-			symbol: 'ETH',
-			decimals: 18
-		},
-		rpcUrls: ['https://arb1.arbitrum.io/rpc'],
-		blockExplorerUrls: ['https://arbiscan.io']
-	},
-	[SUPPORTED_NETWORKS.ARBITRUM_GOERLI]: {
-		chainId: `0x${SUPPORTED_NETWORKS.ARBITRUM_GOERLI.toString(16)}`,
-		chainName: 'Arbitrum Goerli',
-		nativeCurrency: {
-			name: 'ETH',
-			symbol: 'ETH',
-			decimals: 18
-		},
-		rpcUrls: ['https://goerli-rollup.arbitrum.io/rpc'],
-		blockExplorerUrls: ['https://goerli.arbiscan.io']
-	}
-};
+export const DEFAULT_NETWORK = 'arbitrumSepolia';

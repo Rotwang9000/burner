@@ -3,7 +3,7 @@ import { ethers, BrowserProvider, JsonRpcSigner, Contract, formatEther, parseEth
 import { useToast } from '@chakra-ui/react';
 import ElasticTokenJSON from '../abis/ElasticToken.json';
 import { ELASTIC_TOKEN_ADDRESS } from "../constants/addresses";
-import { SUPPORTED_NETWORKS, NETWORK_DETAILS } from '../constants/networks';
+import { SUPPORTED_NETWORKS, NetworkInfo, DEFAULT_NETWORK } from '../constants/networks';
 const ElasticTokenABI = ElasticTokenJSON.abi;
 
 interface Web3ContextType {
@@ -24,6 +24,8 @@ interface Web3ContextType {
     getSymbolInfo: (symbol: string) => Promise<any>;
     rebase: () => Promise<void>;
   } | null;
+  currentNetwork: string;
+  switchNetwork: (networkKey: string) => Promise<void>;
 }
 
 const Web3Context = createContext<Web3ContextType>({
@@ -38,6 +40,8 @@ const Web3Context = createContext<Web3ContextType>({
   chainId: null,
   ensureSupportedNetwork: async () => false,
   tokenFunctions: null,
+  currentNetwork: DEFAULT_NETWORK,
+  switchNetwork: async () => {},
 });
 
 export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -48,7 +52,24 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
+  const [currentNetwork, setCurrentNetwork] = useState(DEFAULT_NETWORK);
   const toast = useToast();
+
+  // Add useEffect for network change handling
+  React.useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', (newChainId: string) => {
+        // Force page refresh on chain change
+        window.location.reload();
+      });
+    }
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('chainChanged', () => {});
+      }
+    };
+  }, []);
 
   const ensureSupportedNetwork = useCallback(async () => {
     if (!provider) return false;
@@ -56,28 +77,26 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     const network = await provider.getNetwork();
     const currentChainId = Number(network.chainId);
   
-    if (!Object.values(SUPPORTED_NETWORKS).includes(currentChainId)) {
+    const supportedChainIds = Object.values(SUPPORTED_NETWORKS).map(net => net.id);
+    if (!supportedChainIds.includes(currentChainId)) {
       try {
         if (!window.ethereum) {
           throw new Error('MetaMask is not installed');
         }
         
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [NETWORK_DETAILS[SUPPORTED_NETWORKS.ARBITRUM_GOERLI]]
-        });
+        const targetNetwork = SUPPORTED_NETWORKS[DEFAULT_NETWORK];
         
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: NETWORK_DETAILS[SUPPORTED_NETWORKS.ARBITRUM_GOERLI].chainId }]
+          params: [{ chainId: `0x${targetNetwork.id.toString(16)}` }]
         });
         
         return true;
       } catch (err) {
-        setError('Please switch to Arbitrum network');
+        setError('Please switch to a supported network');
         toast({
           title: "Network Error",
-          description: "Please switch to Arbitrum network",
+          description: "Please switch to a supported network",
           status: "error"
         });
         return false;
@@ -141,6 +160,59 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     setContract(null);
   }, []);
 
+  const switchNetwork = async (networkKey: string) => {
+    try {
+      const network = SUPPORTED_NETWORKS[networkKey];
+      if (!network) throw new Error('Unsupported network');
+
+      if (window.ethereum) {
+        setIsLoading(true);
+        try {
+          // First try to switch to the network
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${network.id.toString(16)}` }],
+          });
+        } catch (switchError: any) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: `0x${network.id.toString(16)}`,
+                chainName: network.name,
+                rpcUrls: [network.rpcUrl],
+                nativeCurrency: {
+                  name: network.currency,
+                  symbol: network.currency,
+                  decimals: 18
+                },
+                blockExplorerUrls: [network.explorerUrl]
+              }]
+            });
+          } else {
+            throw switchError;
+          }
+        }
+        
+        setCurrentNetwork(networkKey);
+        // Wait a brief moment before reconnecting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await connect();
+      }
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      toast({
+        title: "Network Switch Failed",
+        description: error instanceof Error ? error.message : "Failed to switch network",
+        status: "error",
+        duration: 5000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const tokenFunctions = contract ? {
     getBalance: async (address: string) => {
       const balance = await contract.balanceOf(address);
@@ -175,7 +247,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         error,
         chainId,
         ensureSupportedNetwork,
-        tokenFunctions
+        tokenFunctions,
+        currentNetwork,
+        switchNetwork
       }}
     >
       {children}
