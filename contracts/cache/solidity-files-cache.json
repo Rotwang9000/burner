@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\dev\\burner\\contracts\\contracts\\ElasticToken.sol": {
-      "lastModificationDate": 1738322195300,
-      "contentHash": "9c401c04625b819ff1c374a01920fb88",
+      "lastModificationDate": 1738345115939,
+      "contentHash": "c1aa3a201d9e90db24f6e44d1d94f8ed",
       "sourceName": "contracts/ElasticToken.sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -38,8 +38,8 @@
       ]
     },
     "C:\\dev\\burner\\contracts\\contracts\\mocks\\MockPriceFeed.sol": {
-      "lastModificationDate": 1738317580760,
-      "contentHash": "989d17faf4a366b450de834234b37945",
+      "lastModificationDate": 1738338973087,
+      "contentHash": "744ab2c4b794981bd818fe62652674a7",
       "sourceName": "contracts/mocks/MockPriceFeed.sol",
       "solcConfig": {
         "version": "0.8.19",

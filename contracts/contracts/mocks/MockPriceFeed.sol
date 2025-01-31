@@ -9,11 +9,13 @@ contract MockPriceFeed {
     uint256 public lastUpdate;
     uint256 public constant MIN_UPDATE_DELAY = 3; // Reduced from 15 for testing
     uint256 public constant MAX_PRICE_CHANGE = 1000; // 10%
+    string private _description;
 
     constructor(int256 _price) {
         price = _price;
         timestamp = block.timestamp;
         lastUpdate = block.timestamp;
+        _description = "BTC"; // Default to BTC for existing tests
     }
 
     function setPrice(int256 _price) external {
@@ -33,6 +35,16 @@ contract MockPriceFeed {
         lastUpdate = block.timestamp;
         roundId++;
         answeredInRound = roundId;
+    }
+
+    // Add description function
+    function description() external view returns (string memory) {
+        return _description;
+    }
+
+    // Add setter for testing different symbols
+    function setDescription(string memory newDescription) external {
+        _description = newDescription;
     }
 
     function latestRoundData() external view returns (

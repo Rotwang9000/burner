@@ -20,13 +20,23 @@ import type {
 } from "../common";
 
 export interface IPriceFeedInterface extends Interface {
-  getFunction(nameOrSignature: "latestRoundData"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "description" | "latestRoundData"
+  ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "description",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "latestRoundData",
     values?: undefined
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "description",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "latestRoundData",
     data: BytesLike
@@ -76,6 +86,8 @@ export interface IPriceFeed extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  description: TypedContractMethod<[], [string], "view">;
+
   latestRoundData: TypedContractMethod<
     [],
     [
@@ -94,6 +106,9 @@ export interface IPriceFeed extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "description"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "latestRoundData"
   ): TypedContractMethod<

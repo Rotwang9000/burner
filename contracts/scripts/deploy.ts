@@ -6,6 +6,20 @@ async function main() {
 	const [deployer] = await ethers.getSigners();
 	console.log("Deploying with:", deployer.address);
 
+	const MockPriceFeed = await ethers.getContractFactory("MockPriceFeed");
+
+	const btcPriceFeed = await MockPriceFeed.deploy(30000n * 10n ** 8n); // $30,000
+	const ethPriceFeed = await MockPriceFeed.deploy(2000n * 10n ** 8n);  // $2,000
+
+	await btcPriceFeed.waitForDeployment();
+	await ethPriceFeed.waitForDeployment();
+
+	const btcAddress = await btcPriceFeed.getAddress();
+	const ethAddress = await ethPriceFeed.getAddress();
+
+	console.log("BTC Price Feed:", btcAddress);
+	console.log("ETH Price Feed:", ethAddress);
+
 	// Deploy ElasticToken
 	const ElasticToken = await ethers.getContractFactory("ElasticToken");
 	const elasticToken = await ElasticToken.deploy();
@@ -13,6 +27,12 @@ async function main() {
 
 	const elasticTokenAddress = await elasticToken.getAddress();
 	console.log("ElasticToken deployed to:", elasticTokenAddress);
+
+	// Add price feeds
+	await elasticToken.addSymbol( ethAddress);
+	console.log("ETH price feed added to ElasticToken");
+	await elasticToken.addSymbol( btcAddress);
+	console.log("BTC price feed added to ElasticToken");
 
 	// Save address to frontend constants
 	const frontendDir = path.join(__dirname, "../../site/src/constants");

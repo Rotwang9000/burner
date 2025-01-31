@@ -21,10 +21,16 @@ interface IPriceFeed {
 			uint256 startedAt,
 			uint256 updatedAt,
 			uint80 answeredInRound
-		);
+			);
+	
+	function description() external view returns (string memory);
 }
 
 contract ElasticToken {
+    // Add website information
+    string public constant WEBSITE = "https://elastic.lol";
+    string public constant VERSION = "1.0.0";
+    
     // Add reentrancy guard
     uint256 private constant _NOT_ENTERED = 1;
     uint256 private constant _ENTERED = 2;
@@ -36,7 +42,7 @@ contract ElasticToken {
     mapping(bytes32 => uint256) private lastPriceUpdateTime;
 
     // Add flash loan protection
-    mapping(address => uint256) public lastTradeBlock;
+    mapping(address => mapping(string => uint256)) public lastTradeBlock;
     uint256 public constant BLOCKS_BETWEEN_TRADES = 1; // Minimum blocks between trades
 
     // Add pause functionality
@@ -64,9 +70,10 @@ contract ElasticToken {
     }
 
     // Prevent flash loan attacks
-    modifier flashLoanProtection() {
-        require(lastTradeBlock[msg.sender] + BLOCKS_BETWEEN_TRADES < block.number, "Too many trades");
-        lastTradeBlock[msg.sender] = block.number;
+    modifier flashLoanProtection(string memory fnType) {
+        require(lastTradeBlock[msg.sender][fnType] + BLOCKS_BETWEEN_TRADES < block.number, 
+            "Please wait a few blocks between trades");
+        lastTradeBlock[msg.sender][fnType] = block.number;
         _;
     }
 
@@ -92,11 +99,13 @@ contract ElasticToken {
     
     // Add new struct for symbol tracking
     struct SymbolData {
-        string symbol;
-        address priceFeed;
-        int256 lastPrice;
-        uint256 reserveBalance;
-        bool active;
+        string symbol;        // The tracked asset (e.g., "BTC", "ETH", "LINK")
+        address priceFeed;    // Chainlink price feed address
+        int256 lastPrice;     // Last known price in USD
+        uint256 reserveBalance; // ETH reserves for this trading pair
+        bool active;          // Whether trading is enabled
+        uint256 lastRebase;   // Last rebase timestamp
+        uint256 targetPrice;  // Optional target price in USD
     }
 
     // Modify StakePosition to include symbol
@@ -113,8 +122,9 @@ contract ElasticToken {
     
     // Remove old single-symbol variables
     // Basic variables
-	string public name = "ElasticGrows";
+	string public name = "Elastic Growth Token";
 	string public symbol = "EGROW";
+    string public description = "Multi-asset elastic supply token system - elastic.lol";
 	uint8 public decimals = 18;
 
 	uint256 public totalSupply;
@@ -164,6 +174,8 @@ contract ElasticToken {
 	event TaxCollected(uint256 amount, bool isBuyTax);
     event SymbolAdded(string symbol, address priceFeed);
     event SymbolDeactivated(string symbol);
+    event VirtualPairCreated(string symbol, address priceFeed, uint256 targetPrice);
+    event PriceTracked(string symbol, int256 price, int256 change);
 
 	// Add helper to get symbol hash
     function getSymbolHash(string memory symbol_) public pure returns (bytes32) {
@@ -183,12 +195,14 @@ contract ElasticToken {
 	}
 
 	// Add stricter symbol validation
-    function addSymbol(string calldata symbol_, address priceFeed) external {
+    function addSymbol(address priceFeed) external {
+        // Get symbol from price feed description
+        IPriceFeed feed = IPriceFeed(priceFeed);
+        string memory symbol_ = feed.description();
+        require(bytes(symbol_).length > 0, "Empty symbol");
+        
         bytes32 symbolHash = getSymbolHash(symbol_);
         require(!symbolData[symbolHash].active, "Symbol already exists");
-        
-        // Validate price feed extensively
-        IPriceFeed feed = IPriceFeed(priceFeed);
         
         // Check current round data
         (
@@ -209,11 +223,14 @@ contract ElasticToken {
             priceFeed: priceFeed,
             lastPrice: price,
             reserveBalance: 0,
-            active: true
+            active: true,
+            lastRebase: block.timestamp,
+            targetPrice: 0
         });
         
         supportedSymbols.push(symbolHash);
         emit SymbolAdded(symbol_, priceFeed);
+        emit VirtualPairCreated(symbol_, priceFeed, 0); // default target price
     }
 
 	// A standard transfer
@@ -259,7 +276,7 @@ contract ElasticToken {
     external
     payable
     nonReentrant
-    flashLoanProtection
+    flashLoanProtection("buy")  // Specific to buy
     whenNotPaused
     returns (uint256)
 {
@@ -321,7 +338,12 @@ contract ElasticToken {
 }
 
 	// Modify sellTokens function
-	function sellTokens(string calldata symbol_, uint256 tokenAmount) external nonReentrant flashLoanProtection whenNotPaused {
+	function sellTokens(string calldata symbol_, uint256 tokenAmount) 
+        external 
+        nonReentrant 
+        flashLoanProtection("sell")  // Specific to sell
+        whenNotPaused 
+    {
         // Move checks before state changes
         bytes32 symbolHash = getSymbolHash(symbol_);
         SymbolData storage data = symbolData[symbolHash];
@@ -356,7 +378,7 @@ contract ElasticToken {
     }
 
 	// Update openLongPosition to use symbols
-    function openLongPosition(string calldata symbol_) external payable nonReentrant flashLoanProtection whenNotPaused {
+    function openLongPosition(string calldata symbol_) external payable nonReentrant flashLoanProtection("long") whenNotPaused {
         bytes32 symbolHash = getSymbolHash(symbol_);
         require(symbolData[symbolHash].active, "Symbol not supported");
         require(msg.value >= 0.1 ether, "Min 0.1 ETH");
@@ -698,5 +720,14 @@ contract ElasticToken {
     function emergencyShutdown() external onlyOperator {
         paused = true;
         emit EmergencyShutdown(msg.sender);
+    }
+
+    // Add helper to explain the system
+    function getSystemInfo() external pure returns (string memory info) {
+        return "EGROW is a multi-asset elastic supply token system. "
+               "Visit elastic.lol for detailed documentation. "
+               "Each supported symbol creates a virtual trading pair against ETH "
+               "using Chainlink price feeds. The system maintains price-aware "
+               "liquidity pools and adjusts token supply based on price movements.";
     }
 }

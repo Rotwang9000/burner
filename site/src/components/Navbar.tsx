@@ -13,15 +13,18 @@ const Navbar = () => {
             fontSize="xl"
             fontWeight="bold"
             color="blue.400"
-            as={Link}
-            to="/"
+            as="a"
+            href="https://elastic.lol"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Elastic Token
+            elastic.lol
           </Text>
           <Flex ml={8} gap={4}>
             <Text color="white" as={Link} to="/trade">Trade</Text>
             <Text color="white" as={Link} to="/stake">Stake</Text>
             <Text color="white" as={Link} to="/add-token">Add Token</Text>
+            <Text color="white" as={Link} to="/audit">Audit</Text>
           </Flex>
         </Flex>
         <Button

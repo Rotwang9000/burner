@@ -11,6 +11,19 @@ import type {
 const _abi = [
   {
     inputs: [],
+    name: "description",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "latestRoundData",
     outputs: [
       {

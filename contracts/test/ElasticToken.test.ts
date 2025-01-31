@@ -27,17 +27,20 @@ describe("ElasticToken", function () {
         const MockPriceFeed = await ethers.getContractFactory("MockPriceFeed") as ContractFactory;
         btcFeed = (await MockPriceFeed.deploy(BTC_INITIAL_PRICE)) as MockPriceFeed;
         await btcFeed.waitForDeployment();
+        await btcFeed.setDescription("BTC"); // Set description for BTC feed
+
         ethFeed = (await MockPriceFeed.deploy(ETH_INITIAL_PRICE)) as MockPriceFeed;
         await ethFeed.waitForDeployment();
+        await ethFeed.setDescription("ETH"); // Set description for ETH feed
 
         // Deploy token
         const ElasticToken = await ethers.getContractFactory("ElasticToken");
         elasticToken = await ElasticToken.deploy() as unknown as ElasticToken;
         await elasticToken.waitForDeployment();
 
-        // Add supported symbols
-        await elasticToken.addSymbol("BTC", await btcFeed.getAddress());
-        await elasticToken.addSymbol("ETH", await ethFeed.getAddress());
+        // Add supported symbols - updated to only pass the feed address
+        await elasticToken.addSymbol(await btcFeed.getAddress());
+        await elasticToken.addSymbol(await ethFeed.getAddress());
     });
 
     describe("Symbol Management", function () {
@@ -49,7 +52,7 @@ describe("ElasticToken", function () {
 
         it("Should prevent adding duplicate symbols", async function () {
             await expect(
-                elasticToken.addSymbol("BTC", await btcFeed.getAddress())
+                elasticToken.addSymbol(await btcFeed.getAddress())
             ).to.be.revertedWith("Symbol already exists");
         });
 

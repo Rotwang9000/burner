@@ -26,10 +26,12 @@ export interface MockPriceFeedInterface extends Interface {
       | "MAX_PRICE_CHANGE"
       | "MIN_UPDATE_DELAY"
       | "answeredInRound"
+      | "description"
       | "lastUpdate"
       | "latestRoundData"
       | "price"
       | "roundId"
+      | "setDescription"
       | "setPrice"
       | "timestamp"
   ): FunctionFragment;
@@ -47,6 +49,10 @@ export interface MockPriceFeedInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "description",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "lastUpdate",
     values?: undefined
   ): string;
@@ -56,6 +62,10 @@ export interface MockPriceFeedInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "price", values?: undefined): string;
   encodeFunctionData(functionFragment: "roundId", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "setDescription",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "setPrice",
     values: [BigNumberish]
@@ -74,6 +84,10 @@ export interface MockPriceFeedInterface extends Interface {
     functionFragment: "answeredInRound",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "description",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "lastUpdate", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "latestRoundData",
@@ -81,6 +95,10 @@ export interface MockPriceFeedInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "price", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "roundId", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setDescription",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setPrice", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "timestamp", data: BytesLike): Result;
 }
@@ -134,6 +152,8 @@ export interface MockPriceFeed extends BaseContract {
 
   answeredInRound: TypedContractMethod<[], [bigint], "view">;
 
+  description: TypedContractMethod<[], [string], "view">;
+
   lastUpdate: TypedContractMethod<[], [bigint], "view">;
 
   latestRoundData: TypedContractMethod<
@@ -145,6 +165,12 @@ export interface MockPriceFeed extends BaseContract {
   price: TypedContractMethod<[], [bigint], "view">;
 
   roundId: TypedContractMethod<[], [bigint], "view">;
+
+  setDescription: TypedContractMethod<
+    [newDescription: string],
+    [void],
+    "nonpayable"
+  >;
 
   setPrice: TypedContractMethod<[_price: BigNumberish], [void], "nonpayable">;
 
@@ -164,6 +190,9 @@ export interface MockPriceFeed extends BaseContract {
     nameOrSignature: "answeredInRound"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "description"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "lastUpdate"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -179,6 +208,9 @@ export interface MockPriceFeed extends BaseContract {
   getFunction(
     nameOrSignature: "roundId"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "setDescription"
+  ): TypedContractMethod<[newDescription: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setPrice"
   ): TypedContractMethod<[_price: BigNumberish], [void], "nonpayable">;
