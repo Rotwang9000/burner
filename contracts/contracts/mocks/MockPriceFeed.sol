@@ -2,20 +2,37 @@
 pragma solidity ^0.8.19;
 
 contract MockPriceFeed {
-    uint80 public roundId = 100;
+    uint80 public roundId;
     int256 public price;
     uint256 public timestamp;
-    uint80 public answeredInRound = 100;
+    uint80 public answeredInRound;
     uint256 public lastUpdate;
     uint256 public constant MIN_UPDATE_DELAY = 3; // Reduced from 15 for testing
     uint256 public constant MAX_PRICE_CHANGE = 1000; // 10%
     string private _description;
+    
+    // Add constants to match main contract requirements
+    uint256 public constant MIN_ROUNDS = 100;
+    bool public isStale;
 
     constructor(int256 _price) {
         price = _price;
         timestamp = block.timestamp;
         lastUpdate = block.timestamp;
         _description = "BTC"; // Default to BTC for existing tests
+        
+        // Initialize with sufficient rounds
+        roundId = uint80(MIN_ROUNDS);
+        answeredInRound = roundId;
+    }
+
+    function setStale(bool stale) external {
+        isStale = stale;
+        if (stale) {
+            answeredInRound = roundId - 1; // Make answer stale
+        } else {
+            answeredInRound = roundId; // Make answer fresh
+        }
     }
 
     function setPrice(int256 _price) external {
@@ -34,15 +51,15 @@ contract MockPriceFeed {
         timestamp = block.timestamp;
         lastUpdate = block.timestamp;
         roundId++;
-        answeredInRound = roundId;
+        if (!isStale) {
+            answeredInRound = roundId;
+        }
     }
 
-    // Add description function
     function description() external view returns (string memory) {
         return _description;
     }
 
-    // Add setter for testing different symbols
     function setDescription(string memory newDescription) external {
         _description = newDescription;
     }

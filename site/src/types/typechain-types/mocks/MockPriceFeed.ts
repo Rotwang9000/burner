@@ -24,20 +24,27 @@ export interface MockPriceFeedInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "MAX_PRICE_CHANGE"
+      | "MIN_ROUNDS"
       | "MIN_UPDATE_DELAY"
       | "answeredInRound"
       | "description"
+      | "isStale"
       | "lastUpdate"
       | "latestRoundData"
       | "price"
       | "roundId"
       | "setDescription"
       | "setPrice"
+      | "setStale"
       | "timestamp"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "MAX_PRICE_CHANGE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "MIN_ROUNDS",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -52,6 +59,7 @@ export interface MockPriceFeedInterface extends Interface {
     functionFragment: "description",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "isStale", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "lastUpdate",
     values?: undefined
@@ -70,12 +78,14 @@ export interface MockPriceFeedInterface extends Interface {
     functionFragment: "setPrice",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "setStale", values: [boolean]): string;
   encodeFunctionData(functionFragment: "timestamp", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "MAX_PRICE_CHANGE",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "MIN_ROUNDS", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "MIN_UPDATE_DELAY",
     data: BytesLike
@@ -88,6 +98,7 @@ export interface MockPriceFeedInterface extends Interface {
     functionFragment: "description",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "isStale", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lastUpdate", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "latestRoundData",
@@ -100,6 +111,7 @@ export interface MockPriceFeedInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setPrice", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setStale", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "timestamp", data: BytesLike): Result;
 }
 
@@ -148,11 +160,15 @@ export interface MockPriceFeed extends BaseContract {
 
   MAX_PRICE_CHANGE: TypedContractMethod<[], [bigint], "view">;
 
+  MIN_ROUNDS: TypedContractMethod<[], [bigint], "view">;
+
   MIN_UPDATE_DELAY: TypedContractMethod<[], [bigint], "view">;
 
   answeredInRound: TypedContractMethod<[], [bigint], "view">;
 
   description: TypedContractMethod<[], [string], "view">;
+
+  isStale: TypedContractMethod<[], [boolean], "view">;
 
   lastUpdate: TypedContractMethod<[], [bigint], "view">;
 
@@ -174,6 +190,8 @@ export interface MockPriceFeed extends BaseContract {
 
   setPrice: TypedContractMethod<[_price: BigNumberish], [void], "nonpayable">;
 
+  setStale: TypedContractMethod<[stale: boolean], [void], "nonpayable">;
+
   timestamp: TypedContractMethod<[], [bigint], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -184,6 +202,9 @@ export interface MockPriceFeed extends BaseContract {
     nameOrSignature: "MAX_PRICE_CHANGE"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "MIN_ROUNDS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "MIN_UPDATE_DELAY"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -192,6 +213,9 @@ export interface MockPriceFeed extends BaseContract {
   getFunction(
     nameOrSignature: "description"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "isStale"
+  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "lastUpdate"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -214,6 +238,9 @@ export interface MockPriceFeed extends BaseContract {
   getFunction(
     nameOrSignature: "setPrice"
   ): TypedContractMethod<[_price: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setStale"
+  ): TypedContractMethod<[stale: boolean], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "timestamp"
   ): TypedContractMethod<[], [bigint], "view">;

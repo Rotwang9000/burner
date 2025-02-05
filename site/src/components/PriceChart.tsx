@@ -3,18 +3,27 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'rec
 import { useState, useEffect } from 'react';
 import { formatUnits } from 'ethers';
 
-const PriceChart = ({ contract, symbol }: { contract: any; symbol: string }) => {
+interface PriceChartProps {
+  contract: any | null;
+  tokenId: number;  // Change from symbol to tokenId
+}
+
+const PriceChart: React.FC<PriceChartProps> = ({ contract, tokenId }) => {
   const [priceHistory, setPriceHistory] = useState<any[]>([]);
   
   useEffect(() => {
     const fetchPriceHistory = async () => {
-      if (!contract) return;
+      if (!contract || !tokenId) return;
       
       try {
-        // This is just demo data - you'd need to implement actual price history storage
+        // Get symbol from symbolHash
+        const symbolHash = await contract.supportedSymbols(tokenId - 1); // Adjust for 0-based index
+        const data = await contract.symbolData(symbolHash);
+        
+        // For demo purposes - you should implement actual price history tracking
         const mockData = Array.from({ length: 24 }, (_, i) => ({
           time: new Date(Date.now() - (23-i) * 3600000).toLocaleTimeString(),
-          price: Math.random() * 0.1 + 1 // Random price between 1.0 and 1.1
+          price: Number(formatUnits(data.lastPrice, 8)) * (1 + (Math.random() * 0.1 - 0.05)) // ±5% variation
         }));
         setPriceHistory(mockData);
       } catch (error) {
@@ -25,7 +34,7 @@ const PriceChart = ({ contract, symbol }: { contract: any; symbol: string }) => 
     fetchPriceHistory();
     const interval = setInterval(fetchPriceHistory, 60000);
     return () => clearInterval(interval);
-  }, [contract, symbol]);
+  }, [contract, tokenId]);
 
   return (
     <Box bg="gray.800" p={6} borderRadius="lg" w="100%">

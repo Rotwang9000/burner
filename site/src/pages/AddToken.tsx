@@ -76,7 +76,7 @@ const AddToken = () => {
       // Call updated contract function
       const tx = await contract.addSymbol(
         formData.priceFeed,
-        { gasLimit: 200000 }
+        { gasLimit: 400000 }
       );
 
       toast({

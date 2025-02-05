@@ -51,7 +51,7 @@ export interface ElasticTokenInterface extends Interface {
       | "approve"
       | "balanceOf"
       | "burnCurveRate"
-      | "buyTokens"
+      | "buyTokensByIndex"
       | "closeLongPosition"
       | "collectedTaxes"
       | "completeWithdrawal"
@@ -59,49 +59,50 @@ export interface ElasticTokenInterface extends Interface {
       | "decimals"
       | "description"
       | "emergencyShutdown"
-      | "emergencyWithdraw"
       | "getPositionInfo"
       | "getSupportedSymbolsCount"
       | "getSymbolHash"
       | "getSymbolInfo"
-      | "getSymbolPrice"
+      | "getSymbolPriceByIndex"
+      | "getSymbolStats"
       | "getSystemInfo"
+      | "idBySymbol"
       | "initiateWithdrawal"
       | "lastTradeBlock"
       | "longPositions"
       | "mintCurveRate"
       | "name"
       | "nextWithdrawalId"
-      | "openLongPosition"
+      | "openLongPositionByIndex"
       | "operatorCount"
       | "operators"
       | "owner"
-      | "pause"
-      | "paused"
       | "pendingWithdrawals"
       | "rebaseFactor"
       | "rebaseSupply"
       | "removeOperator"
-      | "sellTokens"
+      | "sellTokensByIndex"
       | "supportedSymbols"
       | "symbol"
+      | "symbolById"
       | "symbolData"
+      | "symbolStats"
       | "totalStaked"
-      | "totalSupply"
+      | "totalSupplyBySymbol"
       | "trackedSymbol"
+      | "tradesPerHour"
       | "transfer"
       | "transferFrom"
       | "transferOwnership"
-      | "unpause"
       | "withdrawTaxes"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
       | "Approval"
-      | "ContractPaused"
-      | "ContractUnpaused"
       | "EmergencyShutdown"
+      | "HolderAdded"
+      | "HolderRemoved"
       | "LongPositionClosed"
       | "LongPositionOpened"
       | "OperatorAdded"
@@ -112,6 +113,7 @@ export interface ElasticTokenInterface extends Interface {
       | "SymbolAdded"
       | "SymbolDeactivated"
       | "TaxCollected"
+      | "TradeExecuted"
       | "Transfer"
       | "VirtualPairCreated"
       | "WithdrawalInitiated"
@@ -191,23 +193,23 @@ export interface ElasticTokenInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "allowance",
-    values: [AddressLike, AddressLike]
+    values: [BytesLike, AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "approve",
-    values: [AddressLike, BigNumberish]
+    values: [BytesLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
-    values: [AddressLike]
+    values: [BytesLike, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "burnCurveRate",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "buyTokens",
-    values: [string, BigNumberish]
+    functionFragment: "buyTokensByIndex",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "closeLongPosition",
@@ -235,10 +237,6 @@ export interface ElasticTokenInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "emergencyWithdraw",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "getPositionInfo",
     values: [AddressLike]
   ): string;
@@ -255,13 +253,18 @@ export interface ElasticTokenInterface extends Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "getSymbolPrice",
-    values: [string]
+    functionFragment: "getSymbolPriceByIndex",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getSymbolStats",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getSystemInfo",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "idBySymbol", values: [string]): string;
   encodeFunctionData(
     functionFragment: "initiateWithdrawal",
     values?: undefined
@@ -284,8 +287,8 @@ export interface ElasticTokenInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "openLongPosition",
-    values: [string]
+    functionFragment: "openLongPositionByIndex",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "operatorCount",
@@ -296,8 +299,6 @@ export interface ElasticTokenInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
-  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pendingWithdrawals",
     values: [BigNumberish]
@@ -315,8 +316,8 @@ export interface ElasticTokenInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "sellTokens",
-    values: [string, BigNumberish]
+    functionFragment: "sellTokensByIndex",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "supportedSymbols",
@@ -324,7 +325,15 @@ export interface ElasticTokenInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "symbolById",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "symbolData",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "symbolStats",
     values: [BytesLike]
   ): string;
   encodeFunctionData(
@@ -332,26 +341,29 @@ export interface ElasticTokenInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "totalSupply",
-    values?: undefined
+    functionFragment: "totalSupplyBySymbol",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "trackedSymbol",
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "tradesPerHour",
+    values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transfer",
-    values: [AddressLike, BigNumberish]
+    values: [BytesLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom",
-    values: [AddressLike, AddressLike, BigNumberish]
+    values: [BytesLike, AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdrawTaxes",
     values?: undefined
@@ -427,7 +439,10 @@ export interface ElasticTokenInterface extends Interface {
     functionFragment: "burnCurveRate",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "buyTokens", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "buyTokensByIndex",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "closeLongPosition",
     data: BytesLike
@@ -454,10 +469,6 @@ export interface ElasticTokenInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "emergencyWithdraw",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getPositionInfo",
     data: BytesLike
   ): Result;
@@ -474,13 +485,18 @@ export interface ElasticTokenInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getSymbolPrice",
+    functionFragment: "getSymbolPriceByIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getSymbolStats",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getSystemInfo",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "idBySymbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "initiateWithdrawal",
     data: BytesLike
@@ -503,7 +519,7 @@ export interface ElasticTokenInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "openLongPosition",
+    functionFragment: "openLongPositionByIndex",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -512,8 +528,6 @@ export interface ElasticTokenInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "operators", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pendingWithdrawals",
     data: BytesLike
@@ -530,23 +544,35 @@ export interface ElasticTokenInterface extends Interface {
     functionFragment: "removeOperator",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "sellTokens", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "sellTokensByIndex",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "supportedSymbols",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "symbolById", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "symbolData", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "symbolStats",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "totalStaked",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "totalSupply",
+    functionFragment: "totalSupplyBySymbol",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "trackedSymbol",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "tradesPerHour",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "transfer", data: BytesLike): Result;
@@ -558,7 +584,6 @@ export interface ElasticTokenInterface extends Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "withdrawTaxes",
     data: BytesLike
@@ -583,35 +608,37 @@ export namespace ApprovalEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace ContractPausedEvent {
-  export type InputTuple = [by: AddressLike];
-  export type OutputTuple = [by: string];
-  export interface OutputObject {
-    by: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace ContractUnpausedEvent {
-  export type InputTuple = [by: AddressLike];
-  export type OutputTuple = [by: string];
-  export interface OutputObject {
-    by: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
 export namespace EmergencyShutdownEvent {
   export type InputTuple = [by: AddressLike];
   export type OutputTuple = [by: string];
   export interface OutputObject {
     by: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace HolderAddedEvent {
+  export type InputTuple = [symbol: string, holder: AddressLike];
+  export type OutputTuple = [symbol: string, holder: string];
+  export interface OutputObject {
+    symbol: string;
+    holder: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace HolderRemovedEvent {
+  export type InputTuple = [symbol: string, holder: AddressLike];
+  export type OutputTuple = [symbol: string, holder: string];
+  export interface OutputObject {
+    symbol: string;
+    holder: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -680,12 +707,19 @@ export namespace OperatorRemovedEvent {
 
 export namespace PriceTrackedEvent {
   export type InputTuple = [
+    id: BigNumberish,
     symbol: string,
     price: BigNumberish,
     change: BigNumberish
   ];
-  export type OutputTuple = [symbol: string, price: bigint, change: bigint];
+  export type OutputTuple = [
+    id: bigint,
+    symbol: string,
+    price: bigint,
+    change: bigint
+  ];
   export interface OutputObject {
+    id: bigint;
     symbol: string;
     price: bigint;
     change: bigint;
@@ -737,9 +771,14 @@ export namespace RebaseEvent {
 }
 
 export namespace SymbolAddedEvent {
-  export type InputTuple = [symbol: string, priceFeed: AddressLike];
-  export type OutputTuple = [symbol: string, priceFeed: string];
+  export type InputTuple = [
+    id: BigNumberish,
+    symbol: string,
+    priceFeed: AddressLike
+  ];
+  export type OutputTuple = [id: bigint, symbol: string, priceFeed: string];
   export interface OutputObject {
+    id: bigint;
     symbol: string;
     priceFeed: string;
   }
@@ -750,9 +789,10 @@ export namespace SymbolAddedEvent {
 }
 
 export namespace SymbolDeactivatedEvent {
-  export type InputTuple = [symbol: string];
-  export type OutputTuple = [symbol: string];
+  export type InputTuple = [id: BigNumberish, symbol: string];
+  export type OutputTuple = [id: bigint, symbol: string];
   export interface OutputObject {
+    id: bigint;
     symbol: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -767,6 +807,19 @@ export namespace TaxCollectedEvent {
   export interface OutputObject {
     amount: bigint;
     isBuyTax: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace TradeExecutedEvent {
+  export type InputTuple = [symbol: string, timestamp: BigNumberish];
+  export type OutputTuple = [symbol: string, timestamp: bigint];
+  export interface OutputObject {
+    symbol: string;
+    timestamp: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -794,16 +847,19 @@ export namespace TransferEvent {
 
 export namespace VirtualPairCreatedEvent {
   export type InputTuple = [
+    id: BigNumberish,
     symbol: string,
     priceFeed: AddressLike,
     targetPrice: BigNumberish
   ];
   export type OutputTuple = [
+    id: bigint,
     symbol: string,
     priceFeed: string,
     targetPrice: bigint
   ];
   export interface OutputObject {
+    id: bigint;
     symbol: string;
     priceFeed: string;
     targetPrice: bigint;
@@ -921,23 +977,27 @@ export interface ElasticToken extends BaseContract {
   >;
 
   allowance: TypedContractMethod<
-    [arg0: AddressLike, arg1: AddressLike],
+    [arg0: BytesLike, arg1: AddressLike, arg2: AddressLike],
     [bigint],
     "view"
   >;
 
   approve: TypedContractMethod<
-    [_spender: AddressLike, _amount: BigNumberish],
+    [symbolHash: BytesLike, _spender: AddressLike, _amount: BigNumberish],
     [boolean],
     "nonpayable"
   >;
 
-  balanceOf: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  balanceOf: TypedContractMethod<
+    [arg0: BytesLike, arg1: AddressLike],
+    [bigint],
+    "view"
+  >;
 
   burnCurveRate: TypedContractMethod<[], [bigint], "view">;
 
-  buyTokens: TypedContractMethod<
-    [symbol_: string, minTokensOut_: BigNumberish],
+  buyTokensByIndex: TypedContractMethod<
+    [symbolId: BigNumberish, minTokensOut_: BigNumberish],
     [bigint],
     "payable"
   >;
@@ -963,8 +1023,6 @@ export interface ElasticToken extends BaseContract {
   description: TypedContractMethod<[], [string], "view">;
 
   emergencyShutdown: TypedContractMethod<[], [void], "nonpayable">;
-
-  emergencyWithdraw: TypedContractMethod<[], [void], "nonpayable">;
 
   getPositionInfo: TypedContractMethod<
     [staker: AddressLike],
@@ -997,9 +1055,29 @@ export interface ElasticToken extends BaseContract {
     "view"
   >;
 
-  getSymbolPrice: TypedContractMethod<[symbol_: string], [bigint], "view">;
+  getSymbolPriceByIndex: TypedContractMethod<
+    [symbolId: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  getSymbolStats: TypedContractMethod<
+    [symbolId: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, bigint] & {
+        totalSupply: bigint;
+        holders: bigint;
+        trades24h: bigint;
+        price24hAgo: bigint;
+        lastTradeTime: bigint;
+      }
+    ],
+    "view"
+  >;
 
   getSystemInfo: TypedContractMethod<[], [string], "view">;
+
+  idBySymbol: TypedContractMethod<[arg0: string], [bigint], "view">;
 
   initiateWithdrawal: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -1028,17 +1106,17 @@ export interface ElasticToken extends BaseContract {
 
   nextWithdrawalId: TypedContractMethod<[], [bigint], "view">;
 
-  openLongPosition: TypedContractMethod<[symbol_: string], [void], "payable">;
+  openLongPositionByIndex: TypedContractMethod<
+    [symbolId: BigNumberish],
+    [void],
+    "payable"
+  >;
 
   operatorCount: TypedContractMethod<[], [bigint], "view">;
 
   operators: TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
-
-  pause: TypedContractMethod<[], [void], "nonpayable">;
-
-  paused: TypedContractMethod<[], [boolean], "view">;
 
   pendingWithdrawals: TypedContractMethod<
     [arg0: BigNumberish],
@@ -1056,8 +1134,8 @@ export interface ElasticToken extends BaseContract {
     "nonpayable"
   >;
 
-  sellTokens: TypedContractMethod<
-    [symbol_: string, tokenAmount: BigNumberish],
+  sellTokensByIndex: TypedContractMethod<
+    [symbolId: BigNumberish, tokenAmount: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -1066,10 +1144,23 @@ export interface ElasticToken extends BaseContract {
 
   symbol: TypedContractMethod<[], [string], "view">;
 
+  symbolById: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+
   symbolData: TypedContractMethod<
     [arg0: BytesLike],
     [
-      [string, string, bigint, bigint, boolean, bigint, bigint] & {
+      [
+        bigint,
+        string,
+        string,
+        bigint,
+        bigint,
+        boolean,
+        bigint,
+        bigint,
+        bigint
+      ] & {
+        id: bigint;
         symbol: string;
         priceFeed: string;
         lastPrice: bigint;
@@ -1077,6 +1168,22 @@ export interface ElasticToken extends BaseContract {
         active: boolean;
         lastRebase: bigint;
         targetPrice: bigint;
+        totalTrades: bigint;
+      }
+    ],
+    "view"
+  >;
+
+  symbolStats: TypedContractMethod<
+    [arg0: BytesLike],
+    [
+      [bigint, bigint, bigint, bigint, bigint, bigint] & {
+        id: bigint;
+        totalSupply: bigint;
+        holders: bigint;
+        trades24h: bigint;
+        price24hAgo: bigint;
+        lastTradeTime: bigint;
       }
     ],
     "view"
@@ -1084,18 +1191,29 @@ export interface ElasticToken extends BaseContract {
 
   totalStaked: TypedContractMethod<[], [bigint], "view">;
 
-  totalSupply: TypedContractMethod<[], [bigint], "view">;
+  totalSupplyBySymbol: TypedContractMethod<[arg0: BytesLike], [bigint], "view">;
 
   trackedSymbol: TypedContractMethod<[], [string], "view">;
 
+  tradesPerHour: TypedContractMethod<
+    [arg0: BytesLike, arg1: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
   transfer: TypedContractMethod<
-    [_to: AddressLike, _amount: BigNumberish],
+    [symbolHash: BytesLike, _to: AddressLike, _amount: BigNumberish],
     [boolean],
     "nonpayable"
   >;
 
   transferFrom: TypedContractMethod<
-    [_from: AddressLike, _to: AddressLike, _amount: BigNumberish],
+    [
+      symbolHash: BytesLike,
+      _from: AddressLike,
+      _to: AddressLike,
+      _amount: BigNumberish
+    ],
     [boolean],
     "nonpayable"
   >;
@@ -1105,8 +1223,6 @@ export interface ElasticToken extends BaseContract {
     [void],
     "nonpayable"
   >;
-
-  unpause: TypedContractMethod<[], [void], "nonpayable">;
 
   withdrawTaxes: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -1180,27 +1296,31 @@ export interface ElasticToken extends BaseContract {
   getFunction(
     nameOrSignature: "allowance"
   ): TypedContractMethod<
-    [arg0: AddressLike, arg1: AddressLike],
+    [arg0: BytesLike, arg1: AddressLike, arg2: AddressLike],
     [bigint],
     "view"
   >;
   getFunction(
     nameOrSignature: "approve"
   ): TypedContractMethod<
-    [_spender: AddressLike, _amount: BigNumberish],
+    [symbolHash: BytesLike, _spender: AddressLike, _amount: BigNumberish],
     [boolean],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "balanceOf"
-  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  ): TypedContractMethod<
+    [arg0: BytesLike, arg1: AddressLike],
+    [bigint],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "burnCurveRate"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "buyTokens"
+    nameOrSignature: "buyTokensByIndex"
   ): TypedContractMethod<
-    [symbol_: string, minTokensOut_: BigNumberish],
+    [symbolId: BigNumberish, minTokensOut_: BigNumberish],
     [bigint],
     "payable"
   >;
@@ -1224,9 +1344,6 @@ export interface ElasticToken extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "emergencyShutdown"
-  ): TypedContractMethod<[], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "emergencyWithdraw"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "getPositionInfo"
@@ -1264,11 +1381,29 @@ export interface ElasticToken extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "getSymbolPrice"
-  ): TypedContractMethod<[symbol_: string], [bigint], "view">;
+    nameOrSignature: "getSymbolPriceByIndex"
+  ): TypedContractMethod<[symbolId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getSymbolStats"
+  ): TypedContractMethod<
+    [symbolId: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, bigint] & {
+        totalSupply: bigint;
+        holders: bigint;
+        trades24h: bigint;
+        price24hAgo: bigint;
+        lastTradeTime: bigint;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getSystemInfo"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "idBySymbol"
+  ): TypedContractMethod<[arg0: string], [bigint], "view">;
   getFunction(
     nameOrSignature: "initiateWithdrawal"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -1299,8 +1434,8 @@ export interface ElasticToken extends BaseContract {
     nameOrSignature: "nextWithdrawalId"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "openLongPosition"
-  ): TypedContractMethod<[symbol_: string], [void], "payable">;
+    nameOrSignature: "openLongPositionByIndex"
+  ): TypedContractMethod<[symbolId: BigNumberish], [void], "payable">;
   getFunction(
     nameOrSignature: "operatorCount"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -1310,12 +1445,6 @@ export interface ElasticToken extends BaseContract {
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "pause"
-  ): TypedContractMethod<[], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "paused"
-  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "pendingWithdrawals"
   ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
@@ -1329,9 +1458,9 @@ export interface ElasticToken extends BaseContract {
     nameOrSignature: "removeOperator"
   ): TypedContractMethod<[operator: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "sellTokens"
+    nameOrSignature: "sellTokensByIndex"
   ): TypedContractMethod<
-    [symbol_: string, tokenAmount: BigNumberish],
+    [symbolId: BigNumberish, tokenAmount: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -1342,11 +1471,25 @@ export interface ElasticToken extends BaseContract {
     nameOrSignature: "symbol"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "symbolById"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  getFunction(
     nameOrSignature: "symbolData"
   ): TypedContractMethod<
     [arg0: BytesLike],
     [
-      [string, string, bigint, bigint, boolean, bigint, bigint] & {
+      [
+        bigint,
+        string,
+        string,
+        bigint,
+        bigint,
+        boolean,
+        bigint,
+        bigint,
+        bigint
+      ] & {
+        id: bigint;
         symbol: string;
         priceFeed: string;
         lastPrice: bigint;
@@ -1354,6 +1497,23 @@ export interface ElasticToken extends BaseContract {
         active: boolean;
         lastRebase: bigint;
         targetPrice: bigint;
+        totalTrades: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "symbolStats"
+  ): TypedContractMethod<
+    [arg0: BytesLike],
+    [
+      [bigint, bigint, bigint, bigint, bigint, bigint] & {
+        id: bigint;
+        totalSupply: bigint;
+        holders: bigint;
+        trades24h: bigint;
+        price24hAgo: bigint;
+        lastTradeTime: bigint;
       }
     ],
     "view"
@@ -1362,31 +1522,40 @@ export interface ElasticToken extends BaseContract {
     nameOrSignature: "totalStaked"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "totalSupply"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: "totalSupplyBySymbol"
+  ): TypedContractMethod<[arg0: BytesLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "trackedSymbol"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "tradesPerHour"
+  ): TypedContractMethod<
+    [arg0: BytesLike, arg1: BigNumberish],
+    [bigint],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "transfer"
   ): TypedContractMethod<
-    [_to: AddressLike, _amount: BigNumberish],
+    [symbolHash: BytesLike, _to: AddressLike, _amount: BigNumberish],
     [boolean],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "transferFrom"
   ): TypedContractMethod<
-    [_from: AddressLike, _to: AddressLike, _amount: BigNumberish],
+    [
+      symbolHash: BytesLike,
+      _from: AddressLike,
+      _to: AddressLike,
+      _amount: BigNumberish
+    ],
     [boolean],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "unpause"
-  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "withdrawTaxes"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -1399,25 +1568,25 @@ export interface ElasticToken extends BaseContract {
     ApprovalEvent.OutputObject
   >;
   getEvent(
-    key: "ContractPaused"
-  ): TypedContractEvent<
-    ContractPausedEvent.InputTuple,
-    ContractPausedEvent.OutputTuple,
-    ContractPausedEvent.OutputObject
-  >;
-  getEvent(
-    key: "ContractUnpaused"
-  ): TypedContractEvent<
-    ContractUnpausedEvent.InputTuple,
-    ContractUnpausedEvent.OutputTuple,
-    ContractUnpausedEvent.OutputObject
-  >;
-  getEvent(
     key: "EmergencyShutdown"
   ): TypedContractEvent<
     EmergencyShutdownEvent.InputTuple,
     EmergencyShutdownEvent.OutputTuple,
     EmergencyShutdownEvent.OutputObject
+  >;
+  getEvent(
+    key: "HolderAdded"
+  ): TypedContractEvent<
+    HolderAddedEvent.InputTuple,
+    HolderAddedEvent.OutputTuple,
+    HolderAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "HolderRemoved"
+  ): TypedContractEvent<
+    HolderRemovedEvent.InputTuple,
+    HolderRemovedEvent.OutputTuple,
+    HolderRemovedEvent.OutputObject
   >;
   getEvent(
     key: "LongPositionClosed"
@@ -1490,6 +1659,13 @@ export interface ElasticToken extends BaseContract {
     TaxCollectedEvent.OutputObject
   >;
   getEvent(
+    key: "TradeExecuted"
+  ): TypedContractEvent<
+    TradeExecutedEvent.InputTuple,
+    TradeExecutedEvent.OutputTuple,
+    TradeExecutedEvent.OutputObject
+  >;
+  getEvent(
     key: "Transfer"
   ): TypedContractEvent<
     TransferEvent.InputTuple,
@@ -1523,28 +1699,6 @@ export interface ElasticToken extends BaseContract {
       ApprovalEvent.OutputObject
     >;
 
-    "ContractPaused(address)": TypedContractEvent<
-      ContractPausedEvent.InputTuple,
-      ContractPausedEvent.OutputTuple,
-      ContractPausedEvent.OutputObject
-    >;
-    ContractPaused: TypedContractEvent<
-      ContractPausedEvent.InputTuple,
-      ContractPausedEvent.OutputTuple,
-      ContractPausedEvent.OutputObject
-    >;
-
-    "ContractUnpaused(address)": TypedContractEvent<
-      ContractUnpausedEvent.InputTuple,
-      ContractUnpausedEvent.OutputTuple,
-      ContractUnpausedEvent.OutputObject
-    >;
-    ContractUnpaused: TypedContractEvent<
-      ContractUnpausedEvent.InputTuple,
-      ContractUnpausedEvent.OutputTuple,
-      ContractUnpausedEvent.OutputObject
-    >;
-
     "EmergencyShutdown(address)": TypedContractEvent<
       EmergencyShutdownEvent.InputTuple,
       EmergencyShutdownEvent.OutputTuple,
@@ -1554,6 +1708,28 @@ export interface ElasticToken extends BaseContract {
       EmergencyShutdownEvent.InputTuple,
       EmergencyShutdownEvent.OutputTuple,
       EmergencyShutdownEvent.OutputObject
+    >;
+
+    "HolderAdded(string,address)": TypedContractEvent<
+      HolderAddedEvent.InputTuple,
+      HolderAddedEvent.OutputTuple,
+      HolderAddedEvent.OutputObject
+    >;
+    HolderAdded: TypedContractEvent<
+      HolderAddedEvent.InputTuple,
+      HolderAddedEvent.OutputTuple,
+      HolderAddedEvent.OutputObject
+    >;
+
+    "HolderRemoved(string,address)": TypedContractEvent<
+      HolderRemovedEvent.InputTuple,
+      HolderRemovedEvent.OutputTuple,
+      HolderRemovedEvent.OutputObject
+    >;
+    HolderRemoved: TypedContractEvent<
+      HolderRemovedEvent.InputTuple,
+      HolderRemovedEvent.OutputTuple,
+      HolderRemovedEvent.OutputObject
     >;
 
     "LongPositionClosed(address,uint256)": TypedContractEvent<
@@ -1600,7 +1776,7 @@ export interface ElasticToken extends BaseContract {
       OperatorRemovedEvent.OutputObject
     >;
 
-    "PriceTracked(string,int256,int256)": TypedContractEvent<
+    "PriceTracked(uint256,string,int256,int256)": TypedContractEvent<
       PriceTrackedEvent.InputTuple,
       PriceTrackedEvent.OutputTuple,
       PriceTrackedEvent.OutputObject
@@ -1633,7 +1809,7 @@ export interface ElasticToken extends BaseContract {
       RebaseEvent.OutputObject
     >;
 
-    "SymbolAdded(string,address)": TypedContractEvent<
+    "SymbolAdded(uint256,string,address)": TypedContractEvent<
       SymbolAddedEvent.InputTuple,
       SymbolAddedEvent.OutputTuple,
       SymbolAddedEvent.OutputObject
@@ -1644,7 +1820,7 @@ export interface ElasticToken extends BaseContract {
       SymbolAddedEvent.OutputObject
     >;
 
-    "SymbolDeactivated(string)": TypedContractEvent<
+    "SymbolDeactivated(uint256,string)": TypedContractEvent<
       SymbolDeactivatedEvent.InputTuple,
       SymbolDeactivatedEvent.OutputTuple,
       SymbolDeactivatedEvent.OutputObject
@@ -1666,6 +1842,17 @@ export interface ElasticToken extends BaseContract {
       TaxCollectedEvent.OutputObject
     >;
 
+    "TradeExecuted(string,uint256)": TypedContractEvent<
+      TradeExecutedEvent.InputTuple,
+      TradeExecutedEvent.OutputTuple,
+      TradeExecutedEvent.OutputObject
+    >;
+    TradeExecuted: TypedContractEvent<
+      TradeExecutedEvent.InputTuple,
+      TradeExecutedEvent.OutputTuple,
+      TradeExecutedEvent.OutputObject
+    >;
+
     "Transfer(address,address,uint256)": TypedContractEvent<
       TransferEvent.InputTuple,
       TransferEvent.OutputTuple,
@@ -1677,7 +1864,7 @@ export interface ElasticToken extends BaseContract {
       TransferEvent.OutputObject
     >;
 
-    "VirtualPairCreated(string,address,uint256)": TypedContractEvent<
+    "VirtualPairCreated(uint256,string,address,uint256)": TypedContractEvent<
       VirtualPairCreatedEvent.InputTuple,
       VirtualPairCreatedEvent.OutputTuple,
       VirtualPairCreatedEvent.OutputObject

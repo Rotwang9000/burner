@@ -9,6 +9,7 @@ import { Web3Provider } from './context/Web3Context';
 import theme from './theme';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Audit } from './pages/Audit';
+import Stats from './pages/Stats';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
                   <Route path="/stake" element={<Stake />} />
                   <Route path="/add-token" element={<AddToken />} />
                   <Route path="/audit" element={<Audit />} />
+                  <Route path="/stats" element={<Stats />} />
                 </Routes>
               </Box>
             </Box>

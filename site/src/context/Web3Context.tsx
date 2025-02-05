@@ -6,6 +6,14 @@ import { ELASTIC_TOKEN_ADDRESS } from "../constants/addresses";
 import { SUPPORTED_NETWORKS, NetworkInfo, DEFAULT_NETWORK } from '../constants/networks';
 const ElasticTokenABI = ElasticTokenJSON.abi;
 
+interface TokenMetadata {
+  id: number;
+  symbol: string;
+  isActive: boolean;
+  lastPrice: string;
+  reserveBalance: string;
+}
+
 interface Web3ContextType {
   account: string | null;
   provider: BrowserProvider | null;
@@ -18,14 +26,18 @@ interface Web3ContextType {
   chainId: number | null;
   ensureSupportedNetwork: () => Promise<boolean>;
   tokenFunctions: {
-    getBalance: (address: string) => Promise<string>;
-    getAllowance: (owner: string, spender: string) => Promise<string>;
-    approve: (spender: string, amount: string) => Promise<void>;
-    getSymbolInfo: (symbol: string) => Promise<any>;
+    getBalance: (address: string, symbolHash: string) => Promise<string>;
+    getAllowance: (symbolHash: string, owner: string, spender: string) => Promise<string>;
+    approve: (symbolHash: string, spender: string, amount: string) => Promise<void>;
+    getSymbolInfo: (tokenId: number) => Promise<any>;
     rebase: () => Promise<void>;
   } | null;
   currentNetwork: string;
   switchNetwork: (networkKey: string) => Promise<void>;
+  getSymbolById: (id: number) => Promise<TokenMetadata>;
+  symbolToId: (symbol: string) => Promise<number>;
+  currentTokenId: number;  // Add this
+  setCurrentTokenId: (id: number) => void;  // Add this
 }
 
 const Web3Context = createContext<Web3ContextType>({
@@ -42,6 +54,10 @@ const Web3Context = createContext<Web3ContextType>({
   tokenFunctions: null,
   currentNetwork: DEFAULT_NETWORK,
   switchNetwork: async () => {},
+  getSymbolById: async () => { throw new Error('Not implemented'); },
+  symbolToId: async () => { throw new Error('Not implemented'); },
+  currentTokenId: 0,  // Add this
+  setCurrentTokenId: () => {},  // Add this
 });
 
 export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -53,6 +69,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
   const [currentNetwork, setCurrentNetwork] = useState(DEFAULT_NETWORK);
+  const [currentTokenId, setCurrentTokenId] = useState<number>(0);
   const toast = useToast();
 
   // Add useEffect for network change handling
@@ -114,6 +131,39 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       setError(null);
+
+      // Force switch to default network first
+      const targetNetwork = SUPPORTED_NETWORKS[DEFAULT_NETWORK];
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${targetNetwork.id.toString(16)}` }],
+        });
+      } catch (switchError: any) {
+        // Add network if it doesn't exist
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: `0x${targetNetwork.id.toString(16)}`,
+              chainName: targetNetwork.name,
+              rpcUrls: [targetNetwork.rpcUrl],
+              nativeCurrency: {
+                name: targetNetwork.currency,
+                symbol: targetNetwork.currency,
+                decimals: 18
+              },
+              blockExplorerUrls: [targetNetwork.explorerUrl]
+            }]
+          });
+        } else {
+          throw switchError;
+        }
+      }
+
+      // Short delay to allow network switch to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts',
       });
@@ -122,7 +172,6 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       const newSigner = await browserProvider.getSigner();
       const contractAddress = ELASTIC_TOKEN_ADDRESS;
 
-      // Replace with your deployed contract address
       const elasticToken = new Contract(
         contractAddress,
         ElasticTokenABI,
@@ -133,13 +182,10 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       setProvider(browserProvider);
       setSigner(newSigner);
       setContract(elasticToken);
+      setCurrentNetwork(DEFAULT_NETWORK);
 
       const network = await browserProvider.getNetwork();
       setChainId(Number(network.chainId));
-      
-      if (!await ensureSupportedNetwork()) {
-        return;
-      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to connect');
@@ -151,7 +197,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, [ensureSupportedNetwork, toast]);
+  }, [toast]);
 
   const disconnect = useCallback(() => {
     setAccount(null);
@@ -213,20 +259,37 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const getSymbolById = useCallback(async (id: number) => {
+    if (!contract) throw new Error('No contract');
+    const info = await contract.getSymbolById(id);
+    return {
+      id,
+      symbol: info.symbol,
+      isActive: info.active,
+      lastPrice: formatUnits(info.price, 8),
+      reserveBalance: formatEther(info.reserveBalance)
+    };
+  }, [contract]);
+
+  const symbolToId = useCallback(async (symbol: string) => {
+    if (!contract) throw new Error('No contract');
+    return await contract.idBySymbol(symbol);
+  }, [contract]);
+
   const tokenFunctions = contract ? {
-    getBalance: async (address: string) => {
-      const balance = await contract.balanceOf(address);
+    getBalance: async (address: string, symbolHash: string) => {
+      const balance = await contract.balanceOf(symbolHash, address);
       return formatEther(balance);
     },
-    getAllowance: async (owner: string, spender: string) => {
-      return contract.allowanceOf(owner, spender);
+    getAllowance: async (symbolHash: string, owner: string, spender: string) => {
+      return contract.allowance(symbolHash, owner, spender);
     },
-    approve: async (spender: string, amount: string) => {
-      const tx = await contract.approve(spender, parseEther(amount));
+    approve: async (symbolHash: string, spender: string, amount: string) => {
+      const tx = await contract.approve(symbolHash, spender, parseEther(amount));
       await tx.wait();
     },
-    getSymbolInfo: async (symbol: string) => {
-      return contract.getSymbolInfo(symbol);
+    getSymbolInfo: async (tokenId: number) => {
+      return contract.getSymbolById(tokenId);
     },
     rebase: async () => {
       const tx = await contract.rebaseSupply();
@@ -249,7 +312,11 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         ensureSupportedNetwork,
         tokenFunctions,
         currentNetwork,
-        switchNetwork
+        switchNetwork,
+        getSymbolById,
+        symbolToId,
+        currentTokenId,
+        setCurrentTokenId
       }}
     >
       {children}
@@ -258,3 +325,28 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const useWeb3Context = () => useContext(Web3Context);
+function formatUnits(value: any, decimals: number): string {
+  // If the value is already a string, try to parse it as a BigInt
+  if (typeof value === 'string') {
+    try {
+      value = BigInt(value);
+    } catch (e) {
+      return '0';
+    }
+  }
+
+  // Handle BigInt values
+  if (typeof value === 'bigint') {
+    const divisor = BigInt(10 ** decimals);
+    const beforeDecimal = value / divisor;
+    const afterDecimal = value % divisor;
+    
+    // Pad the after decimal part with leading zeros
+    const afterDecimalStr = afterDecimal.toString().padStart(decimals, '0');
+    
+    return `${beforeDecimal}.${afterDecimalStr}`;
+  }
+
+  return '0';
+}
+

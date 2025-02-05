@@ -14,6 +14,10 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
+      name: "SafeCast",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SafeCast__factory>;
+    getContractFactory(
       name: "ElasticToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ElasticToken__factory>;
@@ -35,6 +39,11 @@ declare module "hardhat/types/runtime" {
     ): Promise<Contracts.ReentrancyAttacker__factory>;
 
     getContractAt(
+      name: "SafeCast",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SafeCast>;
+    getContractAt(
       name: "ElasticToken",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -61,6 +70,10 @@ declare module "hardhat/types/runtime" {
     ): Promise<Contracts.ReentrancyAttacker>;
 
     deployContract(
+      name: "SafeCast",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SafeCast>;
+    deployContract(
       name: "ElasticToken",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ElasticToken>;
@@ -81,6 +94,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ReentrancyAttacker>;
 
+    deployContract(
+      name: "SafeCast",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SafeCast>;
     deployContract(
       name: "ElasticToken",
       args: any[],

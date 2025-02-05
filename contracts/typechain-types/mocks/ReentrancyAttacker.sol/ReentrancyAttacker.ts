@@ -20,12 +20,22 @@ import type {
 } from "../../common";
 
 export interface ReentrancyAttackerInterface extends Interface {
-  getFunction(nameOrSignature: "attack" | "token"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "attack" | "isReentering" | "token"
+  ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "attack", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "isReentering",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "token", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "attack", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isReentering",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "token", data: BytesLike): Result;
 }
 
@@ -74,6 +84,8 @@ export interface ReentrancyAttacker extends BaseContract {
 
   attack: TypedContractMethod<[], [void], "payable">;
 
+  isReentering: TypedContractMethod<[], [boolean], "view">;
+
   token: TypedContractMethod<[], [string], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -83,6 +95,9 @@ export interface ReentrancyAttacker extends BaseContract {
   getFunction(
     nameOrSignature: "attack"
   ): TypedContractMethod<[], [void], "payable">;
+  getFunction(
+    nameOrSignature: "isReentering"
+  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "token"
   ): TypedContractMethod<[], [string], "view">;

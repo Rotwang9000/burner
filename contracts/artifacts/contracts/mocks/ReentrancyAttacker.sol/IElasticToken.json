@@ -6,9 +6,9 @@
     {
       "inputs": [
         {
-          "internalType": "string",
-          "name": "symbol",
-          "type": "string"
+          "internalType": "uint256",
+          "name": "symbolId",
+          "type": "uint256"
         },
         {
           "internalType": "uint256",
@@ -16,7 +16,7 @@
           "type": "uint256"
         }
       ],
-      "name": "buyTokens",
+      "name": "buyTokensByIndex",
       "outputs": [
         {
           "internalType": "uint256",
@@ -25,24 +25,6 @@
         }
       ],
       "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "symbol",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "tokenAmount",
-          "type": "uint256"
-        }
-      ],
-      "name": "sellTokens",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     }
   ],

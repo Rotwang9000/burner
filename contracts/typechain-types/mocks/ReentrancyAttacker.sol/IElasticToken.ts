@@ -21,19 +21,17 @@ import type {
 } from "../../common";
 
 export interface IElasticTokenInterface extends Interface {
-  getFunction(nameOrSignature: "buyTokens" | "sellTokens"): FunctionFragment;
+  getFunction(nameOrSignature: "buyTokensByIndex"): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "buyTokens",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "sellTokens",
-    values: [string, BigNumberish]
+    functionFragment: "buyTokensByIndex",
+    values: [BigNumberish, BigNumberish]
   ): string;
 
-  decodeFunctionResult(functionFragment: "buyTokens", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "sellTokens", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "buyTokensByIndex",
+    data: BytesLike
+  ): Result;
 }
 
 export interface IElasticToken extends BaseContract {
@@ -79,16 +77,10 @@ export interface IElasticToken extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  buyTokens: TypedContractMethod<
-    [symbol: string, minTokensOut: BigNumberish],
+  buyTokensByIndex: TypedContractMethod<
+    [symbolId: BigNumberish, minTokensOut: BigNumberish],
     [bigint],
     "payable"
-  >;
-
-  sellTokens: TypedContractMethod<
-    [symbol: string, tokenAmount: BigNumberish],
-    [void],
-    "nonpayable"
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -96,18 +88,11 @@ export interface IElasticToken extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "buyTokens"
+    nameOrSignature: "buyTokensByIndex"
   ): TypedContractMethod<
-    [symbol: string, minTokensOut: BigNumberish],
+    [symbolId: BigNumberish, minTokensOut: BigNumberish],
     [bigint],
     "payable"
-  >;
-  getFunction(
-    nameOrSignature: "sellTokens"
-  ): TypedContractMethod<
-    [symbol: string, tokenAmount: BigNumberish],
-    [void],
-    "nonpayable"
   >;
 
   filters: {};

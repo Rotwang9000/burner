@@ -31,16 +31,20 @@ const Stake = () => {
     const fetchSupportedTokens = async () => {
       if (!contract) return;
       try {
-        // Fix: Use correct method to fetch supported tokens
-        const count = await contract.getSupportedSymbolsCount();
+        // Get supported symbols directly from contract
         const tokens: string[] = [];
-        
-        for (let i = 0; i < Number(count); i++) {
-          const symbolHash = await contract.supportedSymbols(i);
-          const symbolData = await contract.symbolData(symbolHash);
-          if (symbolData.active) {
-            tokens.push(symbolData.symbol);
+        let i = 0;
+        try {
+          while (true) {
+            const symbolHash = await contract.supportedSymbols(i);
+            const symbolData = await contract.symbolData(symbolHash);
+            if (symbolData.active) {
+              tokens.push(symbolData.symbol);
+            }
+            i++;
           }
+        } catch (e) {
+          // Stop when we reach the end of the array
         }
         
         setSupportedTokens(tokens);
@@ -65,18 +69,21 @@ const Stake = () => {
       try {
         const positionInfo = await contract.getPositionInfo(account);
         
-        if (positionInfo && positionInfo.ethAmount > 0) {
+        if (positionInfo && positionInfo.ethAmount > 0n) {
           setPosition({
-            tokenSymbol: positionInfo.symbol,
+            tokenSymbol: positionInfo.symbol_,  // Note the underscore here
             ethAmount: formatEther(positionInfo.ethAmount),
             entryPrice: formatUnits(positionInfo.entryPrice, 8),
             leverage: 1, // Contract doesn't support leverage yet
             liquidationPrice: '0', // Not implemented yet
-            pnl: formatEther(0) // Calculate from current price if needed
+            pnl: formatEther(positionInfo.currentPnL)  // Use the PnL from contract
           });
         }
       } catch (error) {
-        console.error("Error fetching position:", error);
+        if (!(error instanceof Error && error.message.includes("No position"))) {
+          console.error("Error fetching position:", error);
+        }
+        setPosition(null);
       }
     };
 
@@ -90,8 +97,12 @@ const Stake = () => {
     
     try {
       setLoading(true);
-      const tx = await contract.openLongPosition(
-        selectedToken,
+      // Get token ID from selected token symbol
+      const tokenId = await contract.idBySymbol(selectedToken);
+      
+      // Use index-based function instead of string-based
+      const tx = await contract.openLongPositionByIndex(
+        tokenId,
         { 
           value: parseEther(amount),
           gasLimit: BigInt(500000)
@@ -139,7 +150,7 @@ const Stake = () => {
         <Heading size="sm" mb={2}>How to Start:</Heading>
         <OrderedList spacing={2} mb={4}>
           <ListItem>Select the token you want to stake against</ListItem>
-          <ListItem>Enter the amount of ETH you want to stake (minimum 0.1 ETH)</ListItem>
+          <ListItem>Enter the amount of ETH you want to stake (minimum 0.01 ETH)</ListItem>
           <ListItem>Click "Open Position" to start earning</ListItem>
           <ListItem>Monitor your position's performance</ListItem>
           <ListItem>Close position any time to collect profits</ListItem>
@@ -149,7 +160,7 @@ const Stake = () => {
           <AlertIcon />
           <VStack align="start" spacing={2}>
             <Text fontSize="sm">
-              Minimum stake requirement: 0.1 ETH
+              Minimum stake requirement: 0.01 ETH
             </Text>
             <Text fontSize="xs" color="gray.300">
               The minimum stake requirement helps:
@@ -165,9 +176,10 @@ const Stake = () => {
       {/* Existing staking interface */}
       <Box bg="gray.800" p={6} borderRadius="lg" w="100%">
         <VStack spacing={4} align="stretch">
-          <Box>
-            <Text mb={2} fontSize="sm" color="gray.400">Select Token to Stake Against</Text>
-            <HStack>
+            <Box>
+            <VStack spacing={4} align="stretch">
+              <Box>
+              <Text mb={2} fontSize="sm" color="gray.400">Select Token to Stake Against</Text>
               <Select 
                 value={selectedToken}
                 onChange={(e) => setSelectedToken(e.target.value)}
@@ -175,24 +187,26 @@ const Stake = () => {
                 bg="gray.700"
               >
                 {supportedTokens.map(token => (
-                  <option key={token} value={token}>{token}/ETH</option>
+                <option key={token} value={token}>{token} /ETH</option>
                 ))}
               </Select>
+              </Box>
               
               <Box>
-                <Text mb={1} fontSize="sm" color="gray.400">Position Size (ETH)</Text>
-                <Input
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  type="number"
-                  min="0.1"
-                  step="0.1"
-                  placeholder="Min 0.1 ETH"
-                  bg="gray.700"
-                />
+              <Text mb={2} fontSize="sm" color="gray.400">Position Size (ETH)</Text>
+              <Input
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="Min 0.01 ETH"
+                bg="gray.700"
+                width="100%"
+              />
               </Box>
-            </HStack>
-          </Box>
+            </VStack>
+            </Box>
 
           {/* Existing position display */}
           {position && (
@@ -231,7 +245,7 @@ const Stake = () => {
             colorScheme="blue"
             onClick={handleStake}
             isLoading={loading}
-            isDisabled={!amount || !selectedToken || Number(amount) < 0.1}
+            isDisabled={!amount || !selectedToken || Number(amount) < 0.01}
           >
             Open Position
           </Button>

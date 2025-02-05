@@ -12,9 +12,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "string",
-        name: "symbol",
-        type: "string",
+        internalType: "uint256",
+        name: "symbolId",
+        type: "uint256",
       },
       {
         internalType: "uint256",
@@ -22,7 +22,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "buyTokens",
+    name: "buyTokensByIndex",
     outputs: [
       {
         internalType: "uint256",
@@ -31,24 +31,6 @@ const _abi = [
       },
     ],
     stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "symbol",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenAmount",
-        type: "uint256",
-      },
-    ],
-    name: "sellTokens",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;

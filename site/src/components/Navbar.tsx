@@ -26,6 +26,7 @@ const Navbar = () => {
             <Text color="white" as={Link} to="/stake">Stake</Text>
             <Text color="white" as={Link} to="/add-token">Add Token</Text>
             <Text color="white" as={Link} to="/audit">Audit</Text>
+            <Text color="white" as={Link} to="/stats">Stats</Text>
           </Flex>
         </Flex>
         <Flex gap={4} alignItems="center">
